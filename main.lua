@@ -24,3 +24,18 @@ local Window = Rayfield:CreateWindow({
        Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
     }
  })
+
+ local MainTab = Window:CreateTab("Home", nil) -- Title, Image
+ local MainSection = MainTabTab:CreateSection("Main")
+
+ local Slider = Tab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {0, 300},
+    Increment = 1,
+    Suffix = "Speed",
+    CurrentValue = 16,
+    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+        game.Players.LocalPlayer.WalkSpeed = (Value)
+    end,
+ })

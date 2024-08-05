@@ -26,9 +26,9 @@ local Window = Rayfield:CreateWindow({
  })
 
  local MainTab = Window:CreateTab("Home", nil) -- Title, Image
- local MainSection = MainTabTab:CreateSection("Main")
+ local MainSection = MainTab:CreateSection("Main")
 
- local Slider = Tab:CreateSlider({
+ local Slider = MainTab:CreateSlider({
     Name = "WalkSpeed",
     Range = {0, 300},
     Increment = 1,

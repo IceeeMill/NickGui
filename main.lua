@@ -1,10 +1,18 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local plr = game.Players.LocalPlayer
+local char = plr.Character
+local hu = char.HumanoidRootPart
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local contextActionService = game:GetService("ContextActionService")
+local flying = false
+
 local Window = Rayfield:CreateWindow({
     Name = "Nick Gui",
     LoadingTitle = "Nick Gui Booting...",
     LoadingSubtitle = "",
     ConfigurationSaving = {
-       Enabled = true,
+       Enabled = false,
        FolderName = nil, -- Create a custom folder for your hub/game
        FileName = "Big Hub"
     },
@@ -28,6 +36,15 @@ local Window = Rayfield:CreateWindow({
  local MainTab = Window:CreateTab("Home", nil) -- Title, Image
  local MainSection = MainTab:CreateSection("Main")
 
+ local Toggle = MainTab:CreateToggle({
+    Name = "Fly",
+    CurrentValue = false,
+    Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+        flying = (Value)
+    end,
+ })
+
  local Slider = MainTab:CreateSlider({
     Name = "WalkSpeed",
     Range = {0, 300},
@@ -36,6 +53,61 @@ local Window = Rayfield:CreateWindow({
     CurrentValue = 16,
     Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Value)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = (Value)
+        
+    end,
+ })
+
+ local Button = MainTab:CreateButton({
+    Name = "Fly",
+    Callback = function()
+        local speed = 30 -- Adjust this for desired speed
+        local moving = false
+        local storedPosition = hu.Position -- Store initial position to keep the player in place
+        
+        -- Function to keep the player floating at a fixed position
+        local function keepStill()
+            hu.Velocity = Vector3.new(0, 0, 0) -- Stop any movement
+            hu.CFrame = CFrame.new(storedPosition) -- Keep at the stored position
+        end
+        
+        local function onInputBegan(actionName, inputState, inputObject)
+            if inputState == Enum.UserInputState.Begin then
+                if actionName == "MoveForward" then
+                    moving = true
+                end
+            end
+        end
+        
+        local function onInputEnded(actionName, inputState, inputObject)
+            if inputState == Enum.UserInputState.End then
+                if actionName == "MoveForward" then
+                    moving = false
+                    storedPosition = hu.Position -- Update the stored position when key is released
+                end
+            end
+        end
+        
+        local function moveInCameraDirection(deltaTime)
+            if moving then
+                local camera = workspace.CurrentCamera
+                local cameraCFrame = camera.CFrame
+        
+                -- Calculate the movement vector based on the camera's look direction
+                local moveDirection = cameraCFrame.LookVector * (speed * deltaTime) -- ensure the multiplication is done inside parentheses
+                hu.CFrame = hu.CFrame + moveDirection -- Correctly add a Vector3 to the current CFrame's position
+            else
+                keepStill()
+            end
+        end
+        
+        
+        -- Bind the action for moving forward
+        contextActionService:BindAction("MoveForward", onInputBegan, false, Enum.KeyCode.W)
+        contextActionService:BindAction("StopMoveForward", onInputEnded, false, Enum.KeyCode.W)
+        
+        -- Update movement every frame
+        runService.RenderStepped:Connect(function(deltaTime)
+            moveInCameraDirection(deltaTime)
+        end)
     end,
  })
